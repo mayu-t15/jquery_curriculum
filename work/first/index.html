@@ -74,19 +74,19 @@
     $('#q1').css('color', 'red');
 
     $('#q2').click(function() {
-          $(this).css('background-color', 'cadetblue');
-        });
+      $(this).css('background-color', 'cadetblue');
+    });
     
     $('#q3').click(fadeOut);
-    function fadeOut() {
-      $(this).fadeOut(2000);
-    };
+    // function fadeOut() {
+    //   $(this).fadeOut(2000);
+    // };
 
     $('#q4').click(function() {
-          $(this).prepend('DOMの中の前')
-                 .append('DOMの中の後')
-                 .before('DOMの前')
-                 .after('DOMの後');
+      $(this).prepend('DOMの中の前')
+              .append('DOMの中の後')
+              .before('DOMの前')
+              .after('DOMの後');
     });
     $('#q5').click(function() {
       $(this).addClass('large');
@@ -103,7 +103,7 @@
       var targetNum = $(this).index();
       console.log(targetNum);
       alert(targetNum);
-      });
+    });
 
 
     $('#q8').hover(function(){
@@ -126,6 +126,9 @@
 
 
   });
+  function fadeOut() {
+      $(this).fadeOut(2000);
+    };
 
   // 同じ？
   // $('#q10').find(li)

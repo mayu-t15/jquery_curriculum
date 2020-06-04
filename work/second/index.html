@@ -21,11 +21,13 @@
     </div>
     <script src="../../common/js/jquery.js"></script>
     <script>
-      $('.modal-show').click(function() {
-        $('.modal').fadeIn(500);
-      });
-      $('.modal-close').click(function() {
-        $('.modal').fadeOut(500);
+      $(function() {
+        $('.modal-show').click(function() {
+          $('.modal').fadeIn(500);
+        });
+        $('.modal-close').click(function() {
+          $('.modal').fadeOut(500);
+        });
       });
 
       // 今回やるのはモーダルです。
