@@ -87,17 +87,19 @@
         $(function() {
           $('.select').change(function() {
             var selectedLang = $(this).val();
-            $('.list').children('li').each(function() {
-              var categoryType = $(this).data('category-type');
-              if(selectedLang == categoryType) {
-                $(this).show();
-              } else {
-                $(this).hide();
-              };
-            });
-            if(selectedLang == 'all') {
+            if(selectedLang === 'all') {
               $('.list').children('li').show();
-            };
+              // elseを回さなくてよくする！
+            } else {
+              $('.list').children('li').each(function(index, value) {
+                var categoryType = $(value).data('category-type');
+                if(selectedLang === categoryType) {
+                  $(value).show();
+                } else {
+                  $(value).hide();
+                };
+              });
+            }
           });
         });
        
