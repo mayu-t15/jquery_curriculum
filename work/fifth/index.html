@@ -87,15 +87,13 @@
       $(function() {
         $('.select').change(function() {
           var selectedLang = $(this).val();
-          $('list').children('li').each(function() {
+          $('.list').children('li').hide().each(function() {
             var categoryType = $(this).data('category-type');
-            if (selectedLang == categoryType) {
+            if (selectedLang == categoryType || selectedLang == 'all') {
               $(this).show();
-            }else {
-              $(this).hide();
-            }
+            };
           });
-        })
+        });
       });
      
 
