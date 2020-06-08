@@ -26,6 +26,50 @@
     </div>
     <script src="../../common/js/jquery.js"></script>
     <script>
+      $(function() {
+        $('#js-search-button').on('click', function() {
+          var searchwords = $('#js-search-word').val();
+          console.log(searchwords);
+          $.ajax({
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+            type: 'GET',
+            datatype: 'json',
+            data: {
+              applicationId: '1019399324990976605',
+              booksGenreId: '001',
+              keyword: searchwords,
+              hits: '20'
+            },
+          }).done(function(data) {
+            if(data.count > 0) {
+              $('.lists').empty();
+              $.each(data.Item, function(index, item) {
+                // data.ItemのItemはひとつ一つのデータに恣意的につけた名前？
+                var list = $(
+                  // $()なんでつける？
+                  '<li class=”lists__item”>' +  
+                    '<div class=”lists__item__inner”>' + 
+                      '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
+                      // item.Item.itemUrlなどの.Itemは必要なのか？each回してるからそれぞれのItemを既に指してはいないの？
+                        '<img src="' + item.largeImageUrl + '" class="lists__item__img" alt="' + item.Item.title + '">' +
+                        '<p class="lists__item__detail">作品名：' + item.Item.title + '</p>' +
+                        '<p class="lists__item__detail">作者名：' + item.Item.author + '</p>' +
+                        '<p class="lists__item__detail">出版社：' + item.Item.publisherName + '</p>' + 
+                      '</a>' +
+                    '</div>' +
+                  '</li>'
+                );
+                $('.lists').prepend(list);
+              })
+            }
+            console.log(data);
+          });
+
+        })
+      })
+
+
+
       // 楽天ブックスの総合検索APIを使って製作してください。
       // answerの挙動を良く見てね！
       //
