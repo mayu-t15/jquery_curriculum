@@ -39,18 +39,30 @@
               booksGenreId: '001',
               keyword: searchwords,
               hits: '20',
-              page: '1'
+              page: '10'
+              // 次へを押したら取得ページを変えたい
             }
           })
           .done(function(data) {
             if(data.count > 0) {
+              var bookNumber = data.first;
+              bookNumber = 1;
+              data.last = bookNumber + 19;
+
               $('.lists').empty();
+              $('.js-pager').remove();
+
+
+              var pager = $('<div class="js-pager"><ul class="btn-wrapper"><li class="prev btn-item disabled"><a class="btn-anchor" href="#">前へ</a></li><li class="next btn-item disabled"><a class="btn-anchor" href="#">次へ</a></li></ul></div>');
+              $('.container').append(pager);
+
+
               $.each(data.Items, function(index, item) {
                 // data.ItemsのItemsは何？？？
                 var list = $(
                   // $()なんでつける？
-                  '<li class=”lists__item”>' +  
-                    '<div class=”lists__item__inner”>' + 
+                  '<li class="lists__item">' +  
+                    '<div class="lists__item__inner">' + 
                       '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
                       // item.Item.itemUrlなどの.Itemは必要なのか？each回してるからそれぞれのItemを既に指してはいないの？
                         '<img src="' + item.Item.largeImageUrl + '" class="lists__item__img" alt="' + item.Item.title + '">' +
@@ -61,24 +73,48 @@
                     '</div>' +
                   '</li>'
                 )
-                $('.lists').prepend(list).trigger( "create" );
+                $('.lists').prepend(list);
               });
+
+              
+              if(data.count > 20) {
+                $('.next').removeClass('disabled');
+                $('.next').click(bookNumber += 20);
+              }
+
+
+
+
             }else {
+              $('message').remove();
               var commentOne = "検索結果が見つかりませんでした。";
               var commentTwo = "別のキーワードで検索してください";
               $('.lists').before('<div class="message">' + commentOne + '<br>' + commentTwo + '</div>');
             }
             console.log(data);
-          }).fail(function() {
-
-          })
+          }).fail(function(XMLHttpRequest, textStatus) {
+            $('.message').remove();
+            $('.lists').empty();
+            if(XMLHttpRequest.status === 400) {
+              $('.lists').before('<div class="message">検索文字が空、もしくは半角英数1文字になっています</div>');
+            }else if(XMLHttpRequest.status === 429) {
+              $('.lists').before('<div class="message">検索文字が空、もしくは半角英数1文字になっています</div>');
+            }else if(XMLHttpRequest.status === 500) {
+              $('.lists').before('<div class="message">通信状態を確認の上、再度実行してください</div>');
+            }
+          });
 
         });
       })
 
+      // 検索文字が空、もしくは半角英数1文字になっています
+      //連打ー予期せぬエラーが発生しました。
+
+      // 次のページを取得する
+      // 
 
 
-      // 楽天ブックスの総合検索APIを使って製作してください。
+      //楽天ブックスの総合検索APIを使って製作してください。
       // answerの挙動を良く見てね！
       //
       // 下記URLにAPIの仕様が載ってるいので、ブラウザで開いて参考にしてください。
