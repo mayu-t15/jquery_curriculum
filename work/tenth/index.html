@@ -38,34 +38,42 @@
               applicationId: '1019399324990976605',
               booksGenreId: '001',
               keyword: searchwords,
-              hits: '20'
-            },
-          }).done(function(data) {
+              hits: '20',
+              page: '1'
+            }
+          })
+          .done(function(data) {
             if(data.count > 0) {
               $('.lists').empty();
-              $.each(data.Item, function(index, item) {
-                // data.ItemのItemはひとつ一つのデータに恣意的につけた名前？
+              $.each(data.Items, function(index, item) {
+                // data.ItemsのItemsは何？？？
                 var list = $(
                   // $()なんでつける？
                   '<li class=”lists__item”>' +  
                     '<div class=”lists__item__inner”>' + 
                       '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
                       // item.Item.itemUrlなどの.Itemは必要なのか？each回してるからそれぞれのItemを既に指してはいないの？
-                        '<img src="' + item.largeImageUrl + '" class="lists__item__img" alt="' + item.Item.title + '">' +
+                        '<img src="' + item.Item.largeImageUrl + '" class="lists__item__img" alt="' + item.Item.title + '">' +
                         '<p class="lists__item__detail">作品名：' + item.Item.title + '</p>' +
                         '<p class="lists__item__detail">作者名：' + item.Item.author + '</p>' +
                         '<p class="lists__item__detail">出版社：' + item.Item.publisherName + '</p>' + 
                       '</a>' +
                     '</div>' +
                   '</li>'
-                );
-                $('.lists').prepend(list);
-              })
+                )
+                $('.lists').prepend(list).trigger( "create" );
+              });
+            }else {
+              var commentOne = "検索結果が見つかりませんでした。";
+              var commentTwo = "別のキーワードで検索してください";
+              $('.lists').before('<div class="message">' + commentOne + '<br>' + commentTwo + '</div>');
             }
             console.log(data);
-          });
+          }).fail(function() {
 
-        })
+          })
+
+        });
       })
 
 
