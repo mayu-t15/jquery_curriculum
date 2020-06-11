@@ -31,8 +31,9 @@
         //グロバ変数
         var pageNum = 1;
         var searchwords = '';
-        if($('pageNum' === 1)) {
-          $('prev').addClass('disabled');
+        var dataCount = '';
+        if(pageNum === 1) {
+          $('.prev').addClass('disabled');
         };
 
         //検索ボタンクリックイベント
@@ -43,23 +44,19 @@
         }); 
 
         //nextボタンクリックイベント
-        $('.next').click(function() {
-          pageNum = countUp();
-          function countUp() {
-            for(var i = 1; i > Math.ceil(data.count / 20); i++) {
-              pageNum = i
-              return pageNum;
-            }
-          };
+        $('body').on('click', '.next', function()  {
+          if(pageNum < Math.ceil(dataCount / 20)) {
+            pageNum = pageNum + 1;
+            return pageNum;
+          }
           show();
         });
+      
         //prevボタン
-        $('.prev').click(function() {
-          pageNum = countminus();
-          function countminus() {
-            for(var i = pageNum; i < 0; i--) {
-              return pageNum;
-            };
+        $('body').on('click', '.prev', function() {
+          if(pageNum > 1) {
+            pageNum = pageNum - 1;
+            return pageNum;
           }
           show();
         });
@@ -85,6 +82,7 @@
             }
           })
           .done(function(data) {
+            dataCount = data.count;
             if(data.count > 0) {
               var pager = $('<div class="js-pager"><ul class="btn-wrapper"><li class="prev btn-item disabled"><a class="btn-anchor" href="#">前へ</a></li><li class="next btn-item disabled"><a class="btn-anchor" href="#">次へ</a></li></ul></div>');
               $('.container').append(pager);
