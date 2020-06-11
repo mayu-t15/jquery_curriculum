@@ -29,15 +29,13 @@
     <script>
       $(function() {
         //グロバ変数
-        var pageNum = 1;
+        var pageNum = '';
         var searchwords = '';
         var dataCount = '';
-        if(pageNum === 1) {
-          $('.prev').addClass('disabled');
-        };
 
         //検索ボタンクリックイベント
         $('#js-search-button').on('click', function() {
+          pageNum = 1;
           searchwords = $('#js-search-word').val();
           console.log(searchwords);
           show();
@@ -47,7 +45,6 @@
         $('body').on('click', '.next', function()  {
           if(pageNum < Math.ceil(dataCount / 20)) {
             pageNum = pageNum + 1;
-            return pageNum;
           }
           show();
         });
@@ -56,7 +53,6 @@
         $('body').on('click', '.prev', function() {
           if(pageNum > 1) {
             pageNum = pageNum - 1;
-            return pageNum;
           }
           show();
         });
@@ -107,10 +103,13 @@
               });
               if(data.count > pageNum * 20) {
                 $('.next').removeClass('disabled');
-                // 毎回先につけるようにする？
-              } else if(Math.ceil(data.count / 20) === pageNum) {
-                $('.next').addClass('disabled');
-              }
+              };
+
+              if(pageNum === 1) {
+                $('.prev').addClass('disabled');
+              }else {
+                $('.prev').removeClass('disabled');
+                };
 
             }else {
               // $('message').remove();
