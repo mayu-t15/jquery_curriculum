@@ -99,16 +99,19 @@
                     '</div>' +
                   '</li>'
                 )
-                $('.lists').prepend(list);
+                $('.lists').append(list);
               });
               if(data.count > pageNum * 20) {
                 $('.next').removeClass('disabled');
+                $('.next').attr('tabindex', '1');
               };
 
               if(pageNum === 1) {
                 $('.prev').addClass('disabled');
               }else {
                 $('.prev').removeClass('disabled');
+                $('.prev').attr('tabindex', '1');
+                
                 };
 
             }else {
@@ -118,15 +121,37 @@
               $('.lists').before('<div class="message">' + commentOne + '<br>' + commentTwo + '</div>');
             }
             console.log(data);
+
+            //disabledの時はaタグで飛べない
+            $('.prev.disabled').click(function() {
+              return false;
+            });
+            $('.next.disabled').click(function() {
+              return false;
+            });
+
+            //tabで選択できなくする
+            if($('.prev').hasClass('disabled')) {
+              $('.prev > a').attr('tabindex', '-1')
+            }
+            if($('.next').hasClass('disabled')) {
+              $('.next > a').attr('tabindex', '-1')
+            }
+
           })
           .fail(function(XMLHttpRequest, textStatus) {
             if(XMLHttpRequest.status === 400) {
               $('.lists').before('<div class="message">検索文字が空、もしくは半角英数1文字になっています</div>');
             }else if(XMLHttpRequest.status === 429) {
-              $('.lists').before('<div class="message">検索文字が空、もしくは半角英数1文字になっています</div>');
+              $('.lists').before('<div class="message">検索回数が上限を超しています。しばらく時間を空けてから、ご利用ください。</div>');
             }else if(XMLHttpRequest.status === 500) {
-              $('.lists').before('<div class="message">通信状態を確認の上、再度実行してください</div>');
+              $('.lists').before('<div class="message">楽天ウェブサービス内エラーが発生しています。しばらく時間を空けてから再度実行してください</div>');
+            }else if (XMLHttpRequest.status === 503) {
+              $('.lists').before('<div class="message">現在大変混み合っております。しばらく時間を空けてから、ご利用ください</div>');
+            }else {
+              $('.lists').before('<div class="message">ネットワークエラー<br>ネットワーク環境をご確認の上再度実行してください。</div>');
             }
+           
           });
         }
 
