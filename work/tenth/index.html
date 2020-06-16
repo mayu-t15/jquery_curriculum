@@ -31,7 +31,7 @@
         //グロバ変数
         var pageNum = null;
         var searchwords = '';
-        var dataCount =null;
+        var dataAmount = null;
 
         //検索ボタンクリックイベント
         $('#js-search-button').on('click', function() {
@@ -43,8 +43,8 @@
 
         //nextボタンクリックイベント
         $('body').on('click', '.next', function()  {
-          if(pageNum < Math.ceil(dataCount / 20)) {
-            pageNum = pageNum + 1;
+          if(pageNum < Math.ceil(dataAmount / 20)) {
+            pageNum++;
           }
           show();
         });
@@ -52,7 +52,7 @@
         //prevボタン
         $('body').on('click', '.prev', function() {
           if(pageNum > 1) {
-            pageNum = pageNum - 1;
+            pageNum--;
           }
           show();
         });
@@ -60,7 +60,7 @@
 
 
         //ajax処理
-        var show = function() {
+        function show() {
           $('.lists').empty();
           $('.message').remove();
           $('.js-pager').remove();
@@ -78,77 +78,18 @@
             }
           })
           .done(function(data) {
-            dataCount = data.count;
-            if(data.count > 0) {
-              //pagerをつける
-              pagerAppend();
-              //pagerのactive/inactive設定
-              button();
-
-              $.each(data.Items, function(index, item) {
-                var list = $(
-                  // $()なんでつける？
-                  '<li class="lists__item">' +  
-                    '<div class="lists__item__inner">' + 
-                      '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
-                        '<img src="' + item.Item.largeImageUrl + '" class="lists__item__img" alt="' + item.Item.title + '">' +
-                        '<p class="lists__item__detail">作品名：' + item.Item.title + '</p>' +
-                        '<p class="lists__item__detail">作者名：' + item.Item.author + '</p>' +
-                        '<p class="lists__item__detail">出版社：' + item.Item.publisherName + '</p>' + 
-                      '</a>' +
-                    '</div>' +
-                  '</li>'
-                )
-                $('.lists').append(list);
-              });
-
-              function button() {
-                if(data.count > pageNum * 20) {
-                  $('.next').removeClass('disabled');
-                  $('.next').attr('tabindex', '1');
-                };
-                if(pageNum === 1) {
-                  $('.prev').addClass('disabled');
-                }else {
-                  $('.prev').removeClass('disabled');
-                  $('.prev').attr('tabindex', '1');
-                }; 
-              }
-
-            }else {
-              // $('message').remove();
-              var commentOne = "検索結果が見つかりませんでした。";
-              var commentTwo = "別のキーワードで検索してください";
-              $('.lists').before('<div class="message">' + commentOne + '<br>' + commentTwo + '</div>');
-            }
-
-
+            dataAmount = data.count;
             console.log(data);
-            buttonActiveInactive();
-
-
-            function buttonActiveInactive() {
-              //aタグhref不可
-              $('.prev.disabled').click(function() {
-                return false;
-              });
-              $('.next.disabled').click(function() {
-                return false;
-              });
-
-              //tabで選択できなくする
-              if($('.prev').hasClass('disabled')) {
-                $('.prev > a').attr('tabindex', '-1')
-              }
-              if($('.next').hasClass('disabled')) {
-                $('.next > a').attr('tabindex', '-1')
-              }
+            
+            if(data.count > 0) {
+              pagerAppend(data.count);
+              showLists(data.Items);
+            } else {
+              $('.lists').before('<div class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索してください</div>');
             }
-
           })
           .fail(function(XMLHttpRequest, textStatus) {
             var errorText = '';
-
             if (XMLHttpRequest.status === 400) {
               errorText = '検索文字が空、もしくは半角英数1文字になっています';
             } else if (XMLHttpRequest.status === 429) {
@@ -162,19 +103,74 @@
             } else {
               errorText = '原因不明のエラー。';
             };
-
             $('.lists').before('<div class="message">' + errorText + '</div>')
           });
         }
 
-
-
-        function pagerAppend() {
-          var pager = $('<div class="js-pager"><ul class="btn-wrapper"><li class="prev btn-item disabled"><a class="btn-anchor" href="#">前へ</a></li><li class="next btn-item disabled"><a class="btn-anchor" href="#">次へ</a></li></ul></div>');
+        function pagerAppend(dataCount) {
+          var pager = $(
+            '<div class="js-pager">' + 
+              '<ul class="btn-wrapper">' + 
+                '<li class="prev btn-item disabled">' + 
+                  '<a class="btn-anchor" href="#">前へ</a>' + 
+                '</li>' +
+                '<li class="next btn-item disabled">' + 
+                  '<a class="btn-anchor" href="#">次へ</a>' +
+                '</li>' +
+              '</ul>' +
+            '</div>'
+          );
           $('.container').append(pager);
+
+          //ボタンdisabledの付け外し
+          if(dataCount > pageNum * 20) {
+            $('.next').removeClass('disabled');
+            $('.next').attr('tabindex', '1');
+          };
+          if(pageNum === 1) {
+            $('.prev').addClass('disabled');
+          }else {
+            $('.prev').removeClass('disabled');
+            $('.prev').attr('tabindex', '1');
+          }; 
+        
+          //aタグhref不可
+          $('.prev.disabled').click(function() {
+            return false;
+          });
+          $('.next.disabled').click(function() {
+            return false;
+          });
+
+          //tabで選択できなくする
+          if($('.prev').hasClass('disabled')) {
+            $('.prev > a').attr('tabindex', '-1')
+          }
+          if($('.next').hasClass('disabled')) {
+            $('.next > a').attr('tabindex', '-1')
+          }
         }
 
-        
+
+        function showLists(dataArray) {
+          $.each(dataArray, function(index, item) {
+            var list = $(
+              // $()なんでつける？
+              '<li class="lists__item">' +  
+                '<div class="lists__item__inner">' + 
+                  '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
+                    '<img src="' + item.Item.largeImageUrl + '" class="lists__item__img" alt="' + item.Item.title + '">' +
+                    '<p class="lists__item__detail">作品名：' + item.Item.title + '</p>' +
+                    '<p class="lists__item__detail">作者名：' + item.Item.author + '</p>' +
+                    '<p class="lists__item__detail">出版社：' + item.Item.publisherName + '</p>' + 
+                  '</a>' +
+                '</div>' +
+              '</li>'
+            )
+            $('.lists').append(list);
+          });
+        }
+
       });
     </script>
   </body>
