@@ -31,22 +31,26 @@
         //グロバ変数
         var pageNum = null;
         var searchwords = '';
-        var dataAmount = null;
+        var LastPageNumber = '';
+
 
         //検索ボタンクリックイベント
         $('#js-search-button').on('click', function() {
           pageNum = 1;
           searchwords = $('#js-search-word').val();
           console.log(searchwords);
-          show();
+          showSearchResult();
         }); 
 
         //nextボタンクリックイベント
         $('body').on('click', '.next', function()  {
-          if(pageNum < Math.ceil(dataAmount / 20)) {
+          if(pageNum < LastPageNumber) {
             pageNum++;
           }
-          show();
+          if($(this).hasClass('disabled')) {
+          return false;
+        };
+          showSearchResult();
         });
       
         //prevボタン
@@ -54,13 +58,17 @@
           if(pageNum > 1) {
             pageNum--;
           }
-          show();
+          if($(this).hasClass('disabled')) {
+          return false;
+        };
+          showSearchResult();
         });
 
 
 
+
         //ajax処理
-        function show() {
+        function showSearchResult() {
           $('.lists').empty();
           $('.message').remove();
           $('.js-pager').remove();
@@ -78,32 +86,19 @@
             }
           })
           .done(function(data) {
-            dataAmount = data.count;
+            LastPageNumber = data.pageCount;
             console.log(data);
-            
+
             if(data.count > 0) {
               pagerAppend(data.count);
-              showLists(data.Items);
+              addLists(data.Items);
             } else {
               $('.lists').before('<div class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索してください</div>');
             }
           })
           .fail(function(XMLHttpRequest, textStatus) {
-            var errorText = '';
-            if (XMLHttpRequest.status === 400) {
-              errorText = '検索文字が空、もしくは半角英数1文字になっています';
-            } else if (XMLHttpRequest.status === 429) {
-              errorText = '検索回数が上限を超過しました。しばらく時間を空けてから、ご利用ください';
-            } else if (XMLHttpRequest.status === 500) {
-              errorText = '楽天ウェブサービス内エラーが発生しています。しばらく時間を空けてから再度実行してください';
-            } else if (XMLHttpRequest.status === 503) {
-              errorText = '現在大変混み合っております。しばらく時間を空けてから、ご利用ください';
-            } else if (XMLHttpRequest.status === 0) {
-              errorText = 'ネットワークエラー<br>ネットワーク環境をご確認の上、再度実行してください。';
-            } else {
-              errorText = '原因不明のエラー。';
-            };
-            $('.lists').before('<div class="message">' + errorText + '</div>')
+            //関数化してしまう
+            showError(XMLHttpRequest.status)
           });
         }
 
@@ -123,7 +118,7 @@
           $('.container').append(pager);
 
           //ボタンdisabledの付け外し
-          if(dataCount > pageNum * 20) {
+          if(pageNum !== LastPageNumber) {
             $('.next').removeClass('disabled');
             $('.next').attr('tabindex', '1');
           };
@@ -133,14 +128,6 @@
             $('.prev').removeClass('disabled');
             $('.prev').attr('tabindex', '1');
           }; 
-        
-          //aタグhref不可
-          $('.prev.disabled').click(function() {
-            return false;
-          });
-          $('.next.disabled').click(function() {
-            return false;
-          });
 
           //tabで選択できなくする
           if($('.prev').hasClass('disabled')) {
@@ -152,23 +139,41 @@
         }
 
 
-        function showLists(dataArray) {
+        function addLists(dataArray) {
+          var list = [];
           $.each(dataArray, function(index, item) {
-            var list = $(
-              // $()なんでつける？
-              '<li class="lists__item">' +  
-                '<div class="lists__item__inner">' + 
-                  '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
-                    '<img src="' + item.Item.largeImageUrl + '" class="lists__item__img" alt="' + item.Item.title + '">' +
-                    '<p class="lists__item__detail">作品名：' + item.Item.title + '</p>' +
-                    '<p class="lists__item__detail">作者名：' + item.Item.author + '</p>' +
-                    '<p class="lists__item__detail">出版社：' + item.Item.publisherName + '</p>' + 
-                  '</a>' +
-                '</div>' +
-              '</li>'
+            list.push(
+            '<li class="lists__item">' +  
+              '<div class="lists__item__inner">' + 
+                '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
+                  '<img src="' + item.Item.largeImageUrl + '" class="lists__item__img" alt="' + item.Item.title + '">' +
+                  '<p class="lists__item__detail">作品名：' + item.Item.title + '</p>' +
+                  '<p class="lists__item__detail">作者名：' + item.Item.author + '</p>' +
+                  '<p class="lists__item__detail">出版社：' + item.Item.publisherName + '</p>' + 
+                '</a>' +
+              '</div>' +
+            '</li>'
             )
-            $('.lists').append(list);
           });
+          $('.lists').append(list);
+        }
+
+        function showError(XMLHttpRequest) {
+          var errorText = '';
+          if (XMLHttpRequest=== 400) {
+            errorText = '検索文字が空、もしくは半角英数1文字になっています';
+          } else if (XMLHttpRequest=== 429) {
+            errorText = '検索回数が上限を超過しました。しばらく時間を空けてから、ご利用ください';
+          } else if (XMLHttpRequest=== 500) {
+            errorText = '楽天ウェブサービス内エラーが発生しています。しばらく時間を空けてから再度実行してください';
+          } else if (XMLHttpRequest=== 503) {
+            errorText = '現在大変混み合っております。しばらく時間を空けてから、ご利用ください';
+          } else if (XMLHttpRequest=== 0) {
+            errorText = 'ネットワークエラー<br>ネットワーク環境をご確認の上、再度実行してください。';
+          } else {
+            errorText = '原因不明のエラー。';
+          };
+          $('.lists').before('<div class="message">' + errorText + '</div>')
         }
 
       });
