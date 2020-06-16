@@ -29,9 +29,9 @@
     <script>
       $(function() {
         //グロバ変数
-        var pageNum = '';
+        var pageNum = null;
         var searchwords = '';
-        var dataCount = '';
+        var dataCount =null;
 
         //検索ボタンクリックイベント
         $('#js-search-button').on('click', function() {
@@ -80,17 +80,17 @@
           .done(function(data) {
             dataCount = data.count;
             if(data.count > 0) {
-              var pager = $('<div class="js-pager"><ul class="btn-wrapper"><li class="prev btn-item disabled"><a class="btn-anchor" href="#">前へ</a></li><li class="next btn-item disabled"><a class="btn-anchor" href="#">次へ</a></li></ul></div>');
-              $('.container').append(pager);
+              //pagerをつける
+              pagerAppend();
+              //pagerのactive/inactive設定
+              button();
 
               $.each(data.Items, function(index, item) {
-                // data.ItemsのItemsは何？？？
                 var list = $(
                   // $()なんでつける？
                   '<li class="lists__item">' +  
                     '<div class="lists__item__inner">' + 
                       '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
-                      // item.Item.itemUrlなどの.Itemは必要なのか？each回してるからそれぞれのItemを既に指してはいないの？
                         '<img src="' + item.Item.largeImageUrl + '" class="lists__item__img" alt="' + item.Item.title + '">' +
                         '<p class="lists__item__detail">作品名：' + item.Item.title + '</p>' +
                         '<p class="lists__item__detail">作者名：' + item.Item.author + '</p>' +
@@ -101,18 +101,19 @@
                 )
                 $('.lists').append(list);
               });
-              if(data.count > pageNum * 20) {
-                $('.next').removeClass('disabled');
-                $('.next').attr('tabindex', '1');
-              };
 
-              if(pageNum === 1) {
-                $('.prev').addClass('disabled');
-              }else {
-                $('.prev').removeClass('disabled');
-                $('.prev').attr('tabindex', '1');
-                
+              function button() {
+                if(data.count > pageNum * 20) {
+                  $('.next').removeClass('disabled');
+                  $('.next').attr('tabindex', '1');
                 };
+                if(pageNum === 1) {
+                  $('.prev').addClass('disabled');
+                }else {
+                  $('.prev').removeClass('disabled');
+                  $('.prev').attr('tabindex', '1');
+                }; 
+              }
 
             }else {
               // $('message').remove();
@@ -120,41 +121,60 @@
               var commentTwo = "別のキーワードで検索してください";
               $('.lists').before('<div class="message">' + commentOne + '<br>' + commentTwo + '</div>');
             }
+
+
             console.log(data);
+            buttonActiveInactive();
 
-            //disabledの時はaタグで飛べない
-            $('.prev.disabled').click(function() {
-              return false;
-            });
-            $('.next.disabled').click(function() {
-              return false;
-            });
 
-            //tabで選択できなくする
-            if($('.prev').hasClass('disabled')) {
-              $('.prev > a').attr('tabindex', '-1')
-            }
-            if($('.next').hasClass('disabled')) {
-              $('.next > a').attr('tabindex', '-1')
+            function buttonActiveInactive() {
+              //aタグhref不可
+              $('.prev.disabled').click(function() {
+                return false;
+              });
+              $('.next.disabled').click(function() {
+                return false;
+              });
+
+              //tabで選択できなくする
+              if($('.prev').hasClass('disabled')) {
+                $('.prev > a').attr('tabindex', '-1')
+              }
+              if($('.next').hasClass('disabled')) {
+                $('.next > a').attr('tabindex', '-1')
+              }
             }
 
           })
           .fail(function(XMLHttpRequest, textStatus) {
-            if(XMLHttpRequest.status === 400) {
-              $('.lists').before('<div class="message">検索文字が空、もしくは半角英数1文字になっています</div>');
-            }else if(XMLHttpRequest.status === 429) {
-              $('.lists').before('<div class="message">検索回数が上限を超しています。しばらく時間を空けてから、ご利用ください。</div>');
-            }else if(XMLHttpRequest.status === 500) {
-              $('.lists').before('<div class="message">楽天ウェブサービス内エラーが発生しています。しばらく時間を空けてから再度実行してください</div>');
-            }else if (XMLHttpRequest.status === 503) {
-              $('.lists').before('<div class="message">現在大変混み合っております。しばらく時間を空けてから、ご利用ください</div>');
-            }else {
-              $('.lists').before('<div class="message">ネットワークエラー<br>ネットワーク環境をご確認の上再度実行してください。</div>');
-            }
-           
+            var errorText = '';
+
+            if (XMLHttpRequest.status === 400) {
+              errorText = '検索文字が空、もしくは半角英数1文字になっています';
+            } else if (XMLHttpRequest.status === 429) {
+              errorText = '検索回数が上限を超過しました。しばらく時間を空けてから、ご利用ください';
+            } else if (XMLHttpRequest.status === 500) {
+              errorText = '楽天ウェブサービス内エラーが発生しています。しばらく時間を空けてから再度実行してください';
+            } else if (XMLHttpRequest.status === 503) {
+              errorText = '現在大変混み合っております。しばらく時間を空けてから、ご利用ください';
+            } else if (XMLHttpRequest.status === 0) {
+              errorText = 'ネットワークエラー<br>ネットワーク環境をご確認の上、再度実行してください。';
+            } else {
+              errorText = '原因不明のエラー。';
+            };
+
+            $('.lists').before('<div class="message">' + errorText + '</div>')
           });
         }
 
+
+
+        function pagerAppend() {
+          var pager = $('<div class="js-pager"><ul class="btn-wrapper"><li class="prev btn-item disabled"><a class="btn-anchor" href="#">前へ</a></li><li class="next btn-item disabled"><a class="btn-anchor" href="#">次へ</a></li></ul></div>');
+          $('.container').append(pager);
+        }
+
+        
       });
     </script>
   </body>
