@@ -34,41 +34,42 @@
         var LastPageNumber = '';
 
 
-        //検索ボタンクリックイベント
+        //検索ボタン
         $('#js-search-button').on('click', function() {
           pageNum = 1;
           searchwords = $('#js-search-word').val();
           console.log(searchwords);
-          showSearchResult();
+          getBookData();
         }); 
 
-        //nextボタンクリックイベント
+        //次へボタン
         $('body').on('click', '.next', function()  {
-          if(pageNum < LastPageNumber) {
+          if (pageNum < LastPageNumber) {
             pageNum++;
+            getBookData();
+          } else {
+            $('.lists').before('<div class="message">これ以上はありません</div>');
           }
-          if($(this).hasClass('disabled')) {
-          return false;
-        };
-          showSearchResult();
+          // if($(this).hasClass('disabled')) {
+          //   return false;
+          // };
         });
       
-        //prevボタン
+        //前へボタン
         $('body').on('click', '.prev', function() {
-          if(pageNum > 1) {
+          if ($(this).hasClass('disabled')) {
+            return false;
+          } else {
             pageNum--;
+            getBookData();
           }
-          if($(this).hasClass('disabled')) {
-          return false;
-        };
-          showSearchResult();
         });
 
 
 
 
         //ajax処理
-        function showSearchResult() {
+        function getBookData() {
           $('.lists').empty();
           $('.message').remove();
           $('.js-pager').remove();
@@ -86,23 +87,27 @@
             }
           })
           .done(function(data) {
+            showResults(data.count, data.Items);
             LastPageNumber = data.pageCount;
-            console.log(data);
-
-            if(data.count > 0) {
-              pagerAppend(data.count);
-              addLists(data.Items);
-            } else {
-              $('.lists').before('<div class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索してください</div>');
-            }
           })
-          .fail(function(XMLHttpRequest, textStatus) {
-            //関数化してしまう
+          .fail(function(XMLHttpRequest) {
             showError(XMLHttpRequest.status)
           });
         }
 
-        function pagerAppend(dataCount) {
+
+
+
+        function showResults(dataAmount, dataArray) {
+          if(dataAmount > 0) {
+            pagerAppend();
+            addLists(dataArray);
+          } else {
+            $('.lists').before('<div class="message">検索結果が見つかりませんでした。<br>別のキーワードで検索してください</div>');
+          }
+        }
+
+        function pagerAppend() {
           var pager = $(
             '<div class="js-pager">' + 
               '<ul class="btn-wrapper">' + 
@@ -116,33 +121,37 @@
             '</div>'
           );
           $('.container').append(pager);
+          btnActiveInactive();
+          tabInactive();
 
-          //ボタンdisabledの付け外し
-          if(pageNum !== LastPageNumber) {
-            $('.next').removeClass('disabled');
-            $('.next').attr('tabindex', '1');
-          };
-          if(pageNum === 1) {
-            $('.prev').addClass('disabled');
-          }else {
-            $('.prev').removeClass('disabled');
-            $('.prev').attr('tabindex', '1');
-          }; 
-
-          //tabで選択できなくする
-          if($('.prev').hasClass('disabled')) {
-            $('.prev > a').attr('tabindex', '-1')
+          function btnActiveInactive() {
+            if(pageNum !== LastPageNumber) {
+              $('.next').removeClass('disabled');
+              $('.next').attr('tabindex', '1');
+            };
+            if(pageNum === 1) {
+              $('.prev').addClass('disabled');
+            }else {
+              $('.prev').removeClass('disabled');
+              $('.prev').attr('tabindex', '1');
+            }; 
           }
-          if($('.next').hasClass('disabled')) {
-            $('.next > a').attr('tabindex', '-1')
+          function tabInactive() {
+            if($('.prev').hasClass('disabled')) {
+              $('.prev > a').attr('tabindex', '-1')
+            }
+            if($('.next').hasClass('disabled')) {
+              $('.next > a').attr('tabindex', '-1')
+            }
           }
         }
 
 
+        // showResultsの中にあるaddLists。引数dataArrayにはdata.Itemsが入る;
         function addLists(dataArray) {
-          var list = [];
+          var list = '';
           $.each(dataArray, function(index, item) {
-            list.push(
+            list += 
             '<li class="lists__item">' +  
               '<div class="lists__item__inner">' + 
                 '<a href="' + item.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
@@ -153,7 +162,6 @@
                 '</a>' +
               '</div>' +
             '</li>'
-            )
           });
           $('.lists').append(list);
         }
